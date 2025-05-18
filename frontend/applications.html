@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applications - PawsFind</title>
+    <title>My Applications - PawsFind</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,30 +12,17 @@
             <div class="logo">PawsFind</div>
             <div class="nav-links">
                 <a href="index.html">Home</a>
-                <a href="add-pet.html">Add Pet</a>
-                <a href="applications.html" class="active">Applications</a>
-                <a href="#" id="logout">Logout</a>
+                <a href="pets.html">Available Pets</a>
+                <a href="applications.html" class="active">My Applications</a>
             </div>
         </nav>
     </header>
 
     <main>
         <div class="container">
-            <div class="applications-container">
-                <h1>Adoption Applications</h1>
-                
-                <div class="applications-filters">
-                    <select id="status-filter">
-                        <option value="all">All Applications</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
-                </div>
-
-                <div class="applications-list" id="applications-list">
-                    <!-- Applications will be loaded here -->
-                </div>
+            <h1>My Applications</h1>
+            <div id="applications-container" class="applications-grid">
+                <!-- Applications will be loaded here -->
             </div>
         </div>
     </main>
@@ -44,108 +31,55 @@
         <p>&copy; 2024 PawsFind. All rights reserved.</p>
     </footer>
 
-    <script src="script.js"></script>
     <script>
-        // Check if user is logged in and is a shelter
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || user.user_type !== 'shelter') {
-            window.location.href = 'index.html';
-        }
-
-        // Load applications
-        async function loadApplications(status = 'all') {
-            try {
-                const response = await fetch(`${API_BASE_URL}/applications/`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to load applications');
-                }
-
-                const applications = await response.json();
-                const filteredApplications = status === 'all' 
-                    ? applications 
-                    : applications.filter(app => app.status === status);
-
-                displayApplications(filteredApplications);
-            } catch (error) {
-                console.error('Error loading applications:', error);
-                alert('Failed to load applications. Please try again.');
-            }
-        }
-
-        // Display applications
-        function displayApplications(applications) {
-            const applicationsList = document.getElementById('applications-list');
-            applicationsList.innerHTML = '';
+        // Load applications from localStorage
+        function loadApplications() {
+            const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+            const container = document.getElementById('applications-container');
 
             if (applications.length === 0) {
-                applicationsList.innerHTML = '<p class="no-applications">No applications found.</p>';
+                container.innerHTML = `
+                    <div class="no-applications">
+                        <p>You haven't submitted any applications yet.</p>
+                        <a href="pets.html" class="cta-button">Browse Pets</a>
+                    </div>
+                `;
                 return;
             }
 
-            applications.forEach(application => {
-                const applicationCard = document.createElement('div');
-                applicationCard.className = 'application-card';
-                applicationCard.innerHTML = `
-                    <div class="application-header">
-                        <h3>${application.pet.name}</h3>
-                        <span class="status ${application.status}">${application.status}</span>
+            container.innerHTML = applications.map(app => `
+                <div class="application-item">
+                    <div class="pet-info">
+                        <img src="${app.pet_details.image || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60'}" 
+                             alt="${app.pet_details.name}" 
+                             class="pet-image">
+                        <div class="pet-details">
+                            <h3>${app.pet_details.name}</h3>
+                            <p><strong>Type:</strong> ${app.pet_details.type}</p>
+                            <p><strong>Breed:</strong> ${app.pet_details.breed}</p>
+                            <p><strong>Age:</strong> ${app.pet_details.age} years</p>
+                            <p><strong>Size:</strong> ${app.pet_details.size}</p>
+                        </div>
                     </div>
                     <div class="application-details">
-                        <p><strong>Applicant:</strong> ${application.applicant.name}</p>
-                        <p><strong>Email:</strong> ${application.applicant.email}</p>
-                        <p><strong>Phone:</strong> ${application.applicant.phone}</p>
-                        <p><strong>Applied on:</strong> ${new Date(application.created_at).toLocaleDateString()}</p>
-                        <p><strong>Message:</strong> ${application.message}</p>
+                        <div class="status ${app.status}">${app.status}</div>
+                        <p><strong>Submitted:</strong> ${new Date(app.submitted_at).toLocaleDateString()}</p>
+                        <p><strong>Message:</strong> ${app.message}</p>
+                        <button onclick="cancelApplication('${app.pet_id}')" class="cancel-button">Cancel Application</button>
                     </div>
-                    ${application.status === 'pending' ? `
-                        <div class="application-actions">
-                            <button onclick="updateApplicationStatus('${application._id}', 'approved')" class="approve-button">
-                                Approve
-                            </button>
-                            <button onclick="updateApplicationStatus('${application._id}', 'rejected')" class="reject-button">
-                                Reject
-                            </button>
-                        </div>
-                    ` : ''}
-                `;
-                applicationsList.appendChild(applicationCard);
-            });
+                </div>
+            `).join('');
         }
 
-        // Update application status
-        async function updateApplicationStatus(applicationId, status) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/applications/${applicationId}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update application status');
-                }
-
-                // Reload applications
-                const currentStatus = document.getElementById('status-filter').value;
-                loadApplications(currentStatus);
-            } catch (error) {
-                console.error('Error updating application:', error);
-                alert('Failed to update application status. Please try again.');
+        // Cancel application
+        function cancelApplication(petId) {
+            if (confirm('Are you sure you want to cancel this application?')) {
+                const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+                const updatedApplications = applications.filter(app => app.pet_id !== petId);
+                localStorage.setItem('applications', JSON.stringify(updatedApplications));
+                loadApplications();
             }
         }
-
-        // Event listeners
-        document.getElementById('status-filter').addEventListener('change', (e) => {
-            loadApplications(e.target.value);
-        });
 
         // Initial load
         loadApplications();

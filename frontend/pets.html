@@ -13,7 +13,7 @@
             <div class="nav-links">
                 <a href="index.html">Home</a>
                 <a href="pets.html" class="active">Available Pets</a>
-                <a href="my-applications.html">My Applications</a>
+                <a href="applications.html">My Applications</a>
                 <a href="#" id="logout">Logout</a>
             </div>
         </nav>
@@ -24,63 +24,6 @@
             <div class="pets-container">
                 <h1>Available Pets</h1>
                 
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="type-filter">Pet Type</label>
-                        <select id="type-filter">
-                            <option value="">All Types</option>
-                            <option value="dog">Dog</option>
-                            <option value="cat">Cat</option>
-                            <option value="bird">Bird</option>
-                            <option value="other">Other</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="size-filter">Size</label>
-                        <select id="size-filter">
-                            <option value="">All Sizes</option>
-                            <option value="small">Small</option>
-                            <option value="medium">Medium</option>
-                            <option value="large">Large</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="age-filter">Age</label>
-                        <select id="age-filter">
-                            <option value="">All Ages</option>
-                            <option value="0-1">Under 1 year</option>
-                            <option value="1-3">1-3 years</option>
-                            <option value="3-5">3-5 years</option>
-                            <option value="5+">5+ years</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="gender-filter">Gender</label>
-                        <select id="gender-filter">
-                            <option value="">All Genders</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="neutered-filter">Neutered/Spayed</label>
-                        <select id="neutered-filter">
-                            <option value="">All</option>
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="search-input">Search</label>
-                        <input type="text" id="search-input" placeholder="Search by name or breed">
-                    </div>
-                </div>
-
                 <div class="pets-grid" id="pets-grid">
                     <!-- Pets will be loaded here -->
                 </div>
@@ -102,7 +45,6 @@
         <p>&copy; 2024 PawsFind. All rights reserved.</p>
     </footer>
 
-    <!-- <script src="script.js"></script> -->
     <script>
         // Make sure API_BASE_URL is defined at the very top
         const API_BASE_URL = 'http://localhost:8000/api';
@@ -164,25 +106,12 @@
             img.alt = pet.name;
             img.className = 'pet-image';
             
-            // Handle different types of image data
-            let imageUrl;
-            if (pet.image) {
-                if (pet.image.startsWith('data:image')) {
-                    // If it's already a base64 string
-                    imageUrl = pet.image;
-                } else if (pet.image.startsWith('/')) {
-                    // If it's a relative path from the API
-                    imageUrl = `${API_BASE_URL}${pet.image}`;
-                } else {
-                    // If it's a full URL
-                    imageUrl = pet.image;
-                }
+            // Handle base64 image from API
+            if (pet.image && pet.image.startsWith('data:image')) {
+                img.src = pet.image;
             } else {
-                // Default image if no image is provided
-                imageUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
+                img.src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
             }
-            
-            img.src = imageUrl;
             
             // Add error handling for images
             img.onerror = function() {
@@ -192,11 +121,11 @@
             petCard.innerHTML = `
                 <div class="pet-info">
                     <h3>${pet.name}</h3>
-                    <p><strong>Type:</strong> ${pet.type}</p>
                     <p><strong>Breed:</strong> ${pet.breed}</p>
                     <p><strong>Age:</strong> ${pet.age} years</p>
-                    <p><strong>Size:</strong> ${pet.size}</p>
-                    <button onclick="showPetDetails('${pet._id}')" class="view-button">Learn More</button>
+                    <div class="pet-actions">
+                        <button onclick="showPetDetails('${pet._id}')" class="view-button">Learn More</button>
+                    </div>
                 </div>
             `;
             
@@ -207,7 +136,6 @@
         // Show pet details
         async function showPetDetails(petId) {
             try {
-                console.log('Fetching pet details for:', petId);
                 const response = await fetch(`${API_BASE_URL}/pets/${petId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -221,7 +149,6 @@
                 }
 
                 const pet = await response.json();
-                console.log('Received pet details:', pet);
                 const modal = document.getElementById('pet-modal');
                 const details = document.getElementById('pet-details');
 
@@ -241,17 +168,27 @@
                     <div class="pet-details">
                         <img src="${imageUrl}" alt="${pet.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;">
                         <h2>${pet.name}</h2>
-                        <p><strong>Type:</strong> ${pet.type}</p>
-                        <p><strong>Breed:</strong> ${pet.breed}</p>
-                        <p><strong>Age:</strong> ${pet.age} years</p>
-                        <p><strong>Gender:</strong> ${pet.gender}</p>
-                        <p><strong>Size:</strong> ${pet.size}</p>
-                        <p><strong>Neutered/Spayed:</strong> ${pet.neutered ? 'Yes' : 'No'}</p>
-                        <p><strong>Description:</strong> ${pet.description}</p>
-                        ${pet.tags && pet.tags.length > 0 ? `
-                            <p><strong>Tags:</strong> ${pet.tags.join(', ')}</p>
-                        ` : ''}
-                        <button class="apply-button" onclick="applyForAdoption('${pet._id}')">Apply for Adoption</button>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <p><strong>Type:</strong> ${pet.type}</p>
+                                <p><strong>Breed:</strong> ${pet.breed}</p>
+                                <p><strong>Age:</strong> ${pet.age} years</p>
+                            </div>
+                            <div class="detail-item">
+                                <p><strong>Gender:</strong> ${pet.gender}</p>
+                                <p><strong>Size:</strong> ${pet.size}</p>
+                                <p><strong>Neutered/Spayed:</strong> ${pet.neutered ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <h3>About ${pet.name}</h3>
+                            <p>${pet.description}</p>
+                        </div>
+                        <div class="application-form">
+                            <h3>Apply for Adoption</h3>
+                            <textarea id="application-message" placeholder="Tell us why you'd like to adopt this pet..." rows="4"></textarea>
+                            <button onclick="submitApplication('${pet._id}')" class="apply-button">Submit Application</button>
+                        </div>
                     </div>
                 `;
 
@@ -262,69 +199,54 @@
             }
         }
 
-        // Apply for adoption
-        async function applyForAdoption(petId) {
-            const message = prompt('Please enter a message explaining why you would like to adopt this pet:');
-            if (!message) return;
-
+        // Submit adoption application
+        async function submitApplication(petId) {
             try {
-                console.log('Submitting application for pet:', petId);
-                const response = await fetch(`${API_BASE_URL}/applications/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        pet_id: petId,
-                        message: message
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to submit application');
+                const message = document.getElementById('application-message').value.trim();
+                
+                if (!message) {
+                    alert('Please provide a message explaining why you want to adopt this pet.');
+                    return;
                 }
+
+                // Get pet details first
+                const petResponse = await fetch(`${API_BASE_URL}/pets/${petId}`);
+                if (!petResponse.ok) {
+                    throw new Error('Failed to get pet details');
+                }
+                const pet = await petResponse.json();
+
+                // Create application object
+                const application = {
+                    pet_id: petId,
+                    message: message,
+                    status: 'pending',
+                    pet_details: {
+                        name: pet.name,
+                        type: pet.type,
+                        breed: pet.breed,
+                        age: pet.age,
+                        gender: pet.gender,
+                        size: pet.size,
+                        image: pet.image,
+                        description: pet.description
+                    },
+                    submitted_at: new Date().toISOString()
+                };
+
+                // Store in localStorage
+                const applications = JSON.parse(localStorage.getItem('applications') || '[]');
+                applications.push(application);
+                localStorage.setItem('applications', JSON.stringify(applications));
 
                 alert('Application submitted successfully!');
                 document.getElementById('pet-modal').style.display = 'none';
+                window.location.href = 'applications.html';
             } catch (error) {
                 console.error('Error submitting application:', error);
                 alert(error.message || 'Failed to submit application. Please try again.');
             }
         }
-
-        // Filter pets
-        function filterPets() {
-            const type = document.getElementById('type-filter').value;
-            const size = document.getElementById('size-filter').value;
-            const age = document.getElementById('age-filter').value;
-            const gender = document.getElementById('gender-filter').value;
-            const neutered = document.getElementById('neutered-filter').value;
-            const search = document.getElementById('search-input').value.toLowerCase();
-
-            const pets = document.querySelectorAll('.pet-card');
-            pets.forEach(pet => {
-                const petInfo = pet.querySelector('.pet-info');
-                const petType = petInfo.querySelector('p:nth-child(2)').textContent.toLowerCase();
-                const petSize = petInfo.querySelector('p:nth-child(5)').textContent.toLowerCase();
-                const petName = petInfo.querySelector('h3').textContent.toLowerCase();
-                const petBreed = petInfo.querySelector('p:nth-child(3)').textContent.toLowerCase();
-
-                const typeMatch = !type || petType.includes(type);
-                const sizeMatch = !size || petSize.includes(size);
-                const searchMatch = !search || petName.includes(search) || petBreed.includes(search);
-
-                pet.style.display = typeMatch && sizeMatch && searchMatch ? 'block' : 'none';
-            });
-        }
-
-        // Event listeners
-        document.querySelectorAll('.filter-group select, .filter-group input').forEach(element => {
-            element.addEventListener('change', filterPets);
-        });
-
-        document.getElementById('search-input').addEventListener('input', filterPets);
 
         document.querySelector('.close').addEventListener('click', () => {
             document.getElementById('pet-modal').style.display = 'none';
@@ -339,6 +261,13 @@
 
         // Initial load
         loadPets();
+
+        // Logout functionality
+        document.getElementById('logout').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = 'index.html';
+        });
     </script>
 </body>
 </html> 

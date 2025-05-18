@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shelters - PawsFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PawsFind</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="pets.html">Available Pets</a>
+                <a href="shelters.html" class="active">Shelters</a>
+                <a href="my-applications.html">My Applications</a>
+                <a href="#" id="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="shelters-container">
+                <h1>Our Shelters</h1>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="search-input">Search</label>
+                        <input type="text" id="search-input" placeholder="Search by shelter name or location">
+                    </div>
+                </div>
+
+                <div class="shelters-grid" id="shelters-grid">
+                    <!-- Shelters will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Shelter Details Modal -->
+    <div id="shelter-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="shelter-details">
+                <!-- Shelter details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Make sure API_BASE_URL is defined at the very top
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        // Check if user is logged in
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+
+        // Load shelters
+        async function loadShelters() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/shelters/`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load shelters');
+                }
+
+                const shelters = await response.json();
+                displayShelters(shelters);
+            } catch (error) {
+                console.error('Error loading shelters:', error);
+                const sheltersGrid = document.getElementById('shelters-grid');
+                sheltersGrid.innerHTML = `
+                    <div class="error-message">
+                        <p>Failed to load shelters. Please try again later.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display shelters
+        function displayShelters(shelters) {
+            const sheltersGrid = document.getElementById('shelters-grid');
+            sheltersGrid.innerHTML = '';
+
+            if (!shelters || shelters.length === 0) {
+                sheltersGrid.innerHTML = '<p class="no-shelters">No shelters found.</p>';
+                return;
+            }
+
+            shelters.forEach(shelter => {
+                const shelterCard = createShelterCard(shelter);
+                sheltersGrid.appendChild(shelterCard);
+            });
+        }
+
+        function createShelterCard(shelter) {
+            const shelterCard = document.createElement('div');
+            shelterCard.className = 'shelter-card';
+            
+            const img = document.createElement('img');
+            img.alt = shelter.name;
+            img.className = 'shelter-image';
+            
+            // Handle base64 image from API
+            if (shelter.image && shelter.image.startsWith('data:image')) {
+                img.src = shelter.image;
+            } else {
+                // Default image if no base64 image is provided
+                img.src = 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop&q=60';
+            }
+            
+            // Add error handling for images
+            img.onerror = function() {
+                console.error('Failed to load image for shelter:', shelter.name);
+                this.src = 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop&q=60';
+            };
+            
+            shelterCard.innerHTML = `
+                <div class="shelter-info">
+                    <h3>${shelter.name}</h3>
+                    <p><strong>Location:</strong> ${shelter.location}</p>
+                    <p><strong>Contact:</strong> ${shelter.contact}</p>
+                    <p><strong>Email:</strong> ${shelter.email}</p>
+                    <button onclick="showShelterDetails('${shelter._id}')" class="view-button">Learn More</button>
+                </div>
+            `;
+            
+            shelterCard.insertBefore(img, shelterCard.firstChild);
+            return shelterCard;
+        }
+
+        // Show shelter details
+        async function showShelterDetails(shelterId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/shelters/${shelterId}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load shelter details');
+                }
+
+                const shelter = await response.json();
+                const modal = document.getElementById('shelter-modal');
+                const details = document.getElementById('shelter-details');
+
+                // Handle base64 image from API
+                const imageUrl = (shelter.image && shelter.image.startsWith('data:image')) 
+                    ? shelter.image 
+                    : 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop&q=60';
+
+                details.innerHTML = `
+                    <div class="shelter-details">
+                        <img src="${imageUrl}" 
+                             alt="${shelter.name}" 
+                             style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;"
+                             onerror="this.src='https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop&q=60'">
+                        <h2>${shelter.name}</h2>
+                        <p><strong>Location:</strong> ${shelter.location}</p>
+                        <p><strong>Contact:</strong> ${shelter.contact}</p>
+                        <p><strong>Email:</strong> ${shelter.email}</p>
+                        <p><strong>Description:</strong> ${shelter.description}</p>
+                        ${shelter.website ? `<p><strong>Website:</strong> <a href="${shelter.website}" target="_blank">${shelter.website}</a></p>` : ''}
+                    </div>
+                `;
+
+                modal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading shelter details:', error);
+                alert('Failed to load shelter details. Please try again.');
+            }
+        }
+
+        // Filter shelters
+        function filterShelters() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const shelters = document.querySelectorAll('.shelter-card');
+            
+            shelters.forEach(shelter => {
+                const shelterInfo = shelter.querySelector('.shelter-info');
+                const shelterName = shelterInfo.querySelector('h3').textContent.toLowerCase();
+                const shelterLocation = shelterInfo.querySelector('p:nth-child(2)').textContent.toLowerCase();
+                
+                const searchMatch = !search || 
+                    shelterName.includes(search) || 
+                    shelterLocation.includes(search);
+                
+                shelter.style.display = searchMatch ? 'block' : 'none';
+            });
+        }
+
+        // Event listeners
+        document.getElementById('search-input').addEventListener('input', filterShelters);
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('shelter-modal').style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('shelter-modal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Initial load
+        loadShelters();
+    </script>
+</body>
+</html> 

@@ -52,6 +52,9 @@ class Shelter:
         self.location = location
         self.contact = contact
         self.description = description
+        # Validate image is base64 if provided
+        if image and not (isinstance(image, str) and image.startswith('data:image')):
+            raise ValueError('Image must be a base64 string starting with data:image')
         self.image = image
         self.email = email
         self.phone = phone
@@ -60,6 +63,11 @@ class Shelter:
 
     @staticmethod
     def create(shelter_data):
+        # Validate image is base64 if provided
+        if 'image' in shelter_data and shelter_data['image']:
+            if not (isinstance(shelter_data['image'], str) and shelter_data['image'].startswith('data:image')):
+                raise ValueError('Image must be a base64 string starting with data:image')
+        
         shelter = Shelter(**shelter_data)
         result = shelters_collection.insert_one(shelter.__dict__)
         return str(result.inserted_id)
@@ -74,6 +82,11 @@ class Shelter:
 
     @staticmethod
     def update(shelter_id, shelter_data):
+        # Validate image is base64 if provided
+        if 'image' in shelter_data and shelter_data['image']:
+            if not (isinstance(shelter_data['image'], str) and shelter_data['image'].startswith('data:image')):
+                raise ValueError('Image must be a base64 string starting with data:image')
+        
         shelter_data['updated_at'] = datetime.utcnow()
         return shelters_collection.update_one(
             {'_id': ObjectId(shelter_id)},

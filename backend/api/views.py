@@ -111,22 +111,16 @@ class ShelterViewSet(viewsets.ViewSet):
         try:
             data = request.data.copy()
             
-            # Handle image upload
+            # Handle base64 image
             image_data = data.get('image')
             if image_data:
                 try:
-                    # If it's already a base64 string, use it directly
-                    if isinstance(image_data, str) and image_data.startswith('data:image'):
-                        # Keep the full base64 string
-                        data['image'] = image_data
-                    else:
-                        # If it's a file or other format, handle accordingly
-                        if ',' in image_data:
-                            image_data = image_data.split(',')[1]
-                        image_bytes = base64.b64decode(image_data)
-                        filename = f"shelters/{data['name']}_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.jpg"
-                        path = default_storage.save(filename, ContentFile(image_bytes))
-                        data['image'] = f"/media/{path}"
+                    # Only accept base64 image strings
+                    if not isinstance(image_data, str) or not image_data.startswith('data:image'):
+                        return Response({'error': 'Only base64 image data is accepted'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # Keep the full base64 string
+                    data['image'] = image_data
                 except Exception as e:
                     logger.error(f"Error processing image: {str(e)}")
                     return Response({'error': f'Error processing image: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
