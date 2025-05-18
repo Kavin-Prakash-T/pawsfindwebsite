@@ -98,15 +98,25 @@ class Shelter:
         return shelters_collection.delete_one({'_id': ObjectId(shelter_id)})
 
 class Application:
-    STATUS_CHOICES = ['pending', 'approved', 'rejected']
-
-    def __init__(self, pet_id, applicant_id, status='pending', notes=None):
+    def __init__(self, pet_id, user_id, message, status="pending", pet_details=None, submitted_at=None):
+        self._id = str(ObjectId())
         self.pet_id = pet_id
-        self.applicant_id = applicant_id
+        self.user_id = user_id
+        self.message = message
         self.status = status
-        self.notes = notes
-        self.created_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.pet_details = pet_details or {}
+        self.submitted_at = submitted_at or datetime.utcnow().isoformat()
+
+    def to_dict(self):
+        return {
+            "_id": self._id,
+            "pet_id": self.pet_id,
+            "user_id": self.user_id,
+            "message": self.message,
+            "status": self.status,
+            "pet_details": self.pet_details,
+            "submitted_at": self.submitted_at
+        }
 
     @staticmethod
     def create(application_data):

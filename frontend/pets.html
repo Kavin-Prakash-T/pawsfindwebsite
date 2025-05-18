@@ -21,12 +21,14 @@
 
     <main>
         <div class="container">
-            <div class="pets-container">
+            <div class="header">
                 <h1>Available Pets</h1>
-                
-                <div class="pets-grid" id="pets-grid">
-                    <!-- Pets will be loaded here -->
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search by pet type (e.g., dog, cat, bird)" class="search-input">
                 </div>
+            </div>
+            <div id="pets-container" class="pets-grid">
+                <!-- Pets will be loaded here -->
             </div>
         </div>
     </main>
@@ -44,6 +46,90 @@
     <footer>
         <p>&copy; 2024 PawsFind. All rights reserved.</p>
     </footer>
+
+    <style>
+        .search-container {
+            margin: 20px 0;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+
+        .pets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 300px));
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .pet-card {
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .pet-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .pet-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .pet-info {
+            padding: 15px;
+        }
+
+        .pet-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .pet-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .pet-actions {
+            margin-top: 15px;
+        }
+
+        .view-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-button:hover {
+            background-color: #45a049;
+        }
+    </style>
 
     <script>
         // Make sure API_BASE_URL is defined at the very top
@@ -72,8 +158,8 @@
                 displayPets(pets);
             } catch (error) {
                 console.error('Error loading pets:', error);
-                const petsGrid = document.getElementById('pets-grid');
-                petsGrid.innerHTML = `
+                const petsContainer = document.getElementById('pets-container');
+                petsContainer.innerHTML = `
                     <div class="error-message">
                         <p>Failed to load pets. Please try again later.</p>
                         <p>Error: ${error.message}</p>
@@ -84,17 +170,17 @@
 
         // Display pets
         function displayPets(pets) {
-            const petsGrid = document.getElementById('pets-grid');
-            petsGrid.innerHTML = '';
+            const petsContainer = document.getElementById('pets-container');
+            petsContainer.innerHTML = '';
 
             if (!pets || pets.length === 0) {
-                petsGrid.innerHTML = '<p class="no-pets">No pets found.</p>';
+                petsContainer.innerHTML = '<p class="no-pets">No pets found.</p>';
                 return;
             }
 
             pets.forEach(pet => {
                 const petCard = createPetCard(pet);
-                petsGrid.appendChild(petCard);
+                petsContainer.appendChild(petCard);
             });
         }
 
@@ -121,6 +207,7 @@
             petCard.innerHTML = `
                 <div class="pet-info">
                     <h3>${pet.name}</h3>
+                    <p><strong>Type:</strong> ${pet.type}</p>
                     <p><strong>Breed:</strong> ${pet.breed}</p>
                     <p><strong>Age:</strong> ${pet.age} years</p>
                     <div class="pet-actions">
@@ -210,10 +297,17 @@
                 }
 
                 // Get pet details first
-                const petResponse = await fetch(`${API_BASE_URL}/pets/${petId}`);
+                const petResponse = await fetch(`${API_BASE_URL}/pets/${petId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
                 if (!petResponse.ok) {
                     throw new Error('Failed to get pet details');
                 }
+
                 const pet = await petResponse.json();
 
                 // Create application object
@@ -244,7 +338,7 @@
                 window.location.href = 'applications.html';
             } catch (error) {
                 console.error('Error submitting application:', error);
-                alert(error.message || 'Failed to submit application. Please try again.');
+                alert('Failed to submit application. Please try again.');
             }
         }
 
@@ -267,6 +361,21 @@
             e.preventDefault();
             localStorage.clear();
             window.location.href = 'index.html';
+        });
+
+        // Add search functionality
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const petCards = document.querySelectorAll('.pet-card');
+            
+            petCards.forEach(card => {
+                const petType = card.querySelector('.pet-info p:first-of-type').textContent.toLowerCase();
+                if (petType.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>

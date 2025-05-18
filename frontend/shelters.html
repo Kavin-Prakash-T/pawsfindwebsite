@@ -5,6 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shelters - PawsFind</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .search-container {
+            margin: 20px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+
+        .shelters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 300px));
+            gap: 20px;
+            padding: 20px;
+            justify-content: center;
+        }
+
+        .shelter-card {
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .shelter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .shelter-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .shelter-info {
+            padding: 15px;
+        }
+
+        .shelter-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .shelter-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        .view-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -22,19 +101,14 @@
 
     <main>
         <div class="container">
-            <div class="shelters-container">
+            <div class="header">
                 <h1>Our Shelters</h1>
-                
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="search-input">Search</label>
-                        <input type="text" id="search-input" placeholder="Search by shelter name or location">
-                    </div>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search by shelter name or location" class="search-input">
                 </div>
-
-                <div class="shelters-grid" id="shelters-grid">
-                    <!-- Shelters will be loaded here -->
-                </div>
+            </div>
+            <div id="shelters-container" class="shelters-grid">
+                <!-- Shelters will be loaded here -->
             </div>
         </div>
     </main>
@@ -80,8 +154,8 @@
                 displayShelters(shelters);
             } catch (error) {
                 console.error('Error loading shelters:', error);
-                const sheltersGrid = document.getElementById('shelters-grid');
-                sheltersGrid.innerHTML = `
+                const sheltersContainer = document.getElementById('shelters-container');
+                sheltersContainer.innerHTML = `
                     <div class="error-message">
                         <p>Failed to load shelters. Please try again later.</p>
                         <p>Error: ${error.message}</p>
@@ -92,17 +166,17 @@
 
         // Display shelters
         function displayShelters(shelters) {
-            const sheltersGrid = document.getElementById('shelters-grid');
-            sheltersGrid.innerHTML = '';
+            const sheltersContainer = document.getElementById('shelters-container');
+            sheltersContainer.innerHTML = '';
 
             if (!shelters || shelters.length === 0) {
-                sheltersGrid.innerHTML = '<p class="no-shelters">No shelters found.</p>';
+                sheltersContainer.innerHTML = '<p class="no-shelters">No shelters found.</p>';
                 return;
             }
 
             shelters.forEach(shelter => {
                 const shelterCard = createShelterCard(shelter);
-                sheltersGrid.appendChild(shelterCard);
+                sheltersContainer.appendChild(shelterCard);
             });
         }
 
