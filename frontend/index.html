@@ -13,432 +13,317 @@
             <div class="logo">PawsFind</div>
             <div class="nav-links">
                 <a href="index.html" class="active">Home</a>
-                <a href="pets.html">Available Pets</a>
-                <a href="my-applications.html">My Applications</a>
-                <a href="#" id="logout">Logout</a>
+                <a href="pets.html">Browse Pets</a>
+                <a href="shelters.html">Shelters</a>
+                <a href="#" id="logout-btn">Logout</a>
             </div>
         </nav>
     </header>
 
     <main>
         <section class="hero">
-            <h1>Find Your Perfect Companion</h1>
-            <p>Give a loving home to a pet in need</p>
+            <div class="hero-content">
+                <h1>Find Your Perfect Companion</h1>
+                <p>Give a loving home to a pet in need</p>
+                <a href="pets.html" class="cta-button">Start Your Journey</a>
+            </div>
         </section>
 
-        <section class="filters">
-            <h2>Find Your Perfect Match</h2>
-            <div class="filter-container">
-                <div class="filter-group">
-                    <label for="type">Pet Type</label>
-                    <select id="type">
-                        <option value="">All Types</option>
-                        <option value="dog">Dog</option>
-                        <option value="cat">Cat</option>
-                        <option value="bird">Bird</option>
-                        <option value="other">Other</option>
-                    </select>
+        <section class="features">
+            <h2>Why Choose PawsFind?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&auto=format&fit=crop&q=60" alt="Verified Shelters" class="feature-icon">
+                    <h3>Verified Shelters</h3>
+                    <p>All our partner shelters are verified and committed to animal welfare</p>
                 </div>
-                <div class="filter-group">
-                    <label for="size">Size</label>
-                    <select id="size">
-                        <option value="">All Sizes</option>
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                    </select>
+                <div class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=800&auto=format&fit=crop&q=60" alt="Simple Process" class="feature-icon">
+                    <h3>Simple Process</h3>
+                    <p>Easy adoption process with step-by-step guidance</p>
                 </div>
-                <div class="filter-group">
-                    <label for="gender">Gender</label>
-                    <select id="gender">
-                        <option value="">All Genders</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="age">Age</label>
-                    <select id="age">
-                        <option value="">All Ages</option>
-                        <option value="0-1">Under 1 year</option>
-                        <option value="1-3">1-3 years</option>
-                        <option value="3-5">3-5 years</option>
-                        <option value="5+">5+ years</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="neutered">Neutered</label>
-                    <select id="neutered">
-                        <option value="">All</option>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="search">Search</label>
-                    <input type="text" id="search" placeholder="Search by name or breed">
+                <div class="feature-card">
+                    <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&auto=format&fit=crop&q=60" alt="24/7 Support" class="feature-icon">
+                    <h3>24/7 Support</h3>
+                    <p>Get help anytime with our dedicated support team</p>
                 </div>
             </div>
         </section>
 
-        <section class="pets-grid" id="petsGrid">
-            <!-- Pet cards will be dynamically added here -->
-        </section>
-
-        <!-- Pet Details Modal -->
-        <div class="modal" id="petModal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <div class="pet-details">
-                    <div class="pet-image">
-                        <img id="modalPetImage" src="" alt="Pet Image">
-                    </div>
-                    <div class="pet-info">
-                        <h2 id="modalPetName"></h2>
-                        <div class="pet-stats">
-                            <span id="modalPetType"></span>
-                            <span id="modalPetBreed"></span>
-                            <span id="modalPetAge"></span>
-                        </div>
-                        <p id="modalPetDescription"></p>
-                        <div class="shelter-info">
-                            <h3>Shelter Information</h3>
-                            <p id="modalShelterName"></p>
-                            <p id="modalShelterLocation"></p>
-                        </div>
-                        <div class="pet-tags" id="modalPetTags"></div>
-                        <button class="apply-button" id="applyButton">Apply for Adoption</button>
-                    </div>
+        <section class="adoption-process">
+            <h2>How It Works</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Browse Pets</h3>
+                    <p>Explore our wide selection of pets looking for homes</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Meet & Greet</h3>
+                    <p>Schedule a visit to meet your potential companion</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Apply</h3>
+                    <p>Submit your adoption application</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Welcome Home</h3>
+                    <p>Take your new family member home</p>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <section class="featured-pets">
+            <h2>Featured Pets</h2>
+            <div class="pets-grid" id="pets-container">
+                <!-- Pet cards will be dynamically added here -->
+            </div>
+            <div class="view-more-container">
+                <a href="pets.html" class="view-more-button">View All Pets</a>
+            </div>
+        </section>
+
+        <section class="testimonials">
+            <h2>Happy Stories</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60" alt="Happy Family" class="testimonial-image">
+                    <p class="testimonial-text">"PawsFind made our adoption journey so easy. We found our perfect match!"</p>
+                    <p class="testimonial-author">- Sarah & Max</p>
+                </div>
+                <div class="testimonial-card">
+                    <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=60" alt="Happy Family" class="testimonial-image">
+                    <p class="testimonial-text">"The support team was amazing throughout the process. Thank you!"</p>
+                    <p class="testimonial-author">- John & Luna</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to Find Your Perfect Match?</h2>
+                <p>Start your adoption journey today</p>
+                <a href="pets.html" class="cta-button">Browse Available Pets</a>
+            </div>
+        </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>PawsFind</h3>
+                <p>Connecting loving homes with pets in need</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="pets.html">Browse Pets</a></li>
+                    <li><a href="shelters.html">Find Shelters</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: support@pawsfind.com</p>
+                <p>Phone: (555) 123-4567</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 PawsFind. All rights reserved.</p>
+        </div>
     </footer>
 
     <script>
         const API_BASE_URL = 'http://localhost:8000/api';
-        let currentPets = [];
-        let isLoadingPets = false;
-        const imageCache = new Map();
+        
+        // Cache for pets data
+        let cachedPets = null;
+        let lastFetchTime = 0;
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-        // Function to fetch and cache image
-        async function fetchAndCacheImage(url) {
-            if (imageCache.has(url)) {
-                return imageCache.get(url);
+        // Function to get pets data with caching
+        async function getPetsData() {
+            const currentTime = Date.now();
+            
+            if (cachedPets && (currentTime - lastFetchTime) < CACHE_DURATION) {
+                return cachedPets;
             }
 
             try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
-                    }
-                });
-                
-                if (!response.ok) throw new Error('Failed to fetch image');
-                
-                const blob = await response.blob();
-                const imageURL = URL.createObjectURL(blob);
-                imageCache.set(url, imageURL);
-                return imageURL;
-            } catch (error) {
-                console.error('Error fetching image:', error);
-                return 'images/pet-placeholder.jpg';
-            }
-        }
-
-        // Function to handle image loading with caching
-        async function loadImage(img, imageUrl) {
-            try {
-                const cachedUrl = await fetchAndCacheImage(imageUrl);
-                img.src = cachedUrl;
-            } catch (error) {
-                console.error('Error loading image:', error);
-                img.src = 'images/pet-placeholder.jpg';
-            }
-        }
-
-        // Check if user is logged in
-        async function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return false;
-            }
-
-            try {
-                // Verify token by making a request to a protected endpoint
                 const response = await fetch(`${API_BASE_URL}/pets/`, {
+                    method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Invalid token');
-                }
-                return true;
-            } catch (error) {
-                console.error('Auth error:', error);
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
-                return false;
-            }
-        }
-
-        // Fetch pets from the API
-        async function fetchPets() {
-            if (isLoadingPets) return;
-            isLoadingPets = true;
-
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE_URL}/pets/`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch pets');
+                    throw new Error(`Failed to fetch pets: ${response.status}`);
                 }
 
                 const pets = await response.json();
-                console.log('Fetched pets:', pets); // Debug log
-                currentPets = pets;
-                displayPets(pets);
+                
+                if (!Array.isArray(pets)) {
+                    throw new Error('Invalid pets data received');
+                }
+                
+                cachedPets = pets;
+                lastFetchTime = currentTime;
+                
+                return pets;
             } catch (error) {
                 console.error('Error fetching pets:', error);
-                showError('Failed to load pets. Please try again later.');
-            } finally {
-                isLoadingPets = false;
+                return cachedPets || [];
             }
         }
 
-        // Show error message
-        function showError(message) {
-            const grid = document.getElementById('petsGrid');
-            grid.innerHTML = `<div class="error-message">${message}</div>`;
-        }
-
-        // Display pets in the grid
+        // Function to display pets
         async function displayPets(pets) {
-            const grid = document.getElementById('petsGrid');
-            grid.innerHTML = '';
-
-            if (!pets || pets.length === 0) {
-                grid.innerHTML = '<p class="no-pets">No pets found matching your criteria.</p>';
-                return;
-            }
-
-            const fragment = document.createDocumentFragment();
-
-            for (const pet of pets) {
-                console.log('Processing pet:', pet); // Debug log
-                const card = document.createElement('div');
-                card.className = 'pet-card';
+            const container = document.getElementById('pets-container');
+            
+            try {
+                container.innerHTML = '<div class="loading">Loading pets...</div>';
                 
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'pet-image';
-                const img = document.createElement('img');
-                img.alt = pet.name;
-                img.loading = 'lazy';
-                
-                if (pet.image) {
-                    // Check if the image URL is a base64 string
-                    if (pet.image.startsWith('data:image')) {
-                        img.src = pet.image;
-                    } else {
-                        // Use the provided image URL
-                        const imageUrl = pet.image;
-                        console.log('Loading image from:', imageUrl); // Debug log
-                        await loadImage(img, imageUrl);
-                    }
-                } else {
-                    // If no image specified, use a default based on pet type
-                    const defaultImage = pet.type === 'cat' ? 'cat1.jpeg' : 'dog1.jpeg';
-                    const imageUrl = `http://127.0.0.1:8000/media/${defaultImage}`;
-                    console.log('Using default image:', imageUrl); // Debug log
-                    await loadImage(img, imageUrl);
+                if (!pets || pets.length === 0) {
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p>No pets available at the moment.</p>
+                            <button onclick="retryLoading()" class="retry-button">Retry</button>
+                        </div>
+                    `;
+                    return;
                 }
                 
-                imgContainer.appendChild(img);
+                container.innerHTML = '';
+                const fragment = document.createDocumentFragment();
                 
-                const infoContainer = document.createElement('div');
-                infoContainer.className = 'pet-info';
-                infoContainer.innerHTML = `
-                    <h3>${pet.name}</h3>
-                    <div class="pet-stats">
-                        <span>${pet.type}</span>
-                        <span>${pet.breed}</span>
-                        <span>${pet.age} years</span>
+                // Show exactly 3 pets
+                const displayPets = pets.slice(0, 3);
+                
+                displayPets.forEach(pet => {
+                    const petCard = createPetCard(pet);
+                    fragment.appendChild(petCard);
+                });
+                
+                container.appendChild(fragment);
+                
+            } catch (error) {
+                console.error('Error displaying pets:', error);
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p>Unable to load pets. Please try again later.</p>
+                        <button onclick="retryLoading()" class="retry-button">Retry</button>
                     </div>
-                    <p>${pet.description ? pet.description.substring(0, 100) + (pet.description.length > 100 ? '...' : '') : ''}</p>
-                    <button class="view-details" data-pet-id="${pet._id}">View Details</button>
                 `;
-                
-                card.appendChild(imgContainer);
-                card.appendChild(infoContainer);
-                fragment.appendChild(card);
             }
-
-            grid.appendChild(fragment);
-
-            document.querySelectorAll('.view-details').forEach(button => {
-                button.addEventListener('click', () => showPetDetails(button.dataset.petId));
-            });
         }
 
-        // Show pet details in modal
-        async function showPetDetails(petId) {
-            const pet = currentPets.find(p => p._id === petId);
-            if (!pet) return;
-
-            const modalImg = document.getElementById('modalPetImage');
-            modalImg.loading = 'lazy';
+        // Function to create a pet card element
+        function createPetCard(pet) {
+            const petCard = document.createElement('div');
+            petCard.className = 'pet-card';
             
+            const img = document.createElement('img');
+            img.alt = pet.name;
+            img.className = 'pet-image';
+            
+            // Handle different types of image data
+            let imageUrl;
             if (pet.image) {
-                // Check if the image URL is a base64 string
                 if (pet.image.startsWith('data:image')) {
-                    modalImg.src = pet.image;
+                    // If it's already a base64 string
+                    imageUrl = pet.image;
+                } else if (pet.image.startsWith('/')) {
+                    // If it's a relative path from the API
+                    imageUrl = `${API_BASE_URL}${pet.image}`;
                 } else {
-                    // Use the provided image URL
-                    const imageUrl = pet.image;
-                    console.log('Loading modal image from:', imageUrl); // Debug log
-                    await loadImage(modalImg, imageUrl);
+                    // If it's a full URL
+                    imageUrl = pet.image;
                 }
             } else {
-                // If no image specified, use a default based on pet type
-                const defaultImage = pet.type === 'cat' ? 'cat1.jpeg' : 'dog1.jpeg';
-                const imageUrl = `http://127.0.0.1:8000/media/${defaultImage}`;
-                console.log('Using default modal image:', imageUrl); // Debug log
-                await loadImage(modalImg, imageUrl);
+                // Default image if no image is provided
+                imageUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
             }
-
-            document.getElementById('modalPetName').textContent = pet.name;
-            document.getElementById('modalPetType').textContent = `Type: ${pet.type}`;
-            document.getElementById('modalPetBreed').textContent = `Breed: ${pet.breed}`;
-            document.getElementById('modalPetAge').textContent = `Age: ${pet.age} years`;
-            document.getElementById('modalPetDescription').textContent = pet.description;
-            document.getElementById('modalShelterName').textContent = `Shelter: ${pet.shelter_name}`;
-            document.getElementById('modalShelterLocation').textContent = `Location: ${pet.shelter_location}`;
-
-            const tagsContainer = document.getElementById('modalPetTags');
-            tagsContainer.innerHTML = '';
-            if (pet.tags && Array.isArray(pet.tags)) {
-                pet.tags.forEach(tag => {
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'tag';
-                    tagElement.textContent = tag;
-                    tagsContainer.appendChild(tagElement);
-                });
-            }
-
-            document.getElementById('applyButton').onclick = () => applyForAdoption(pet._id);
-            document.getElementById('petModal').style.display = 'block';
+            
+            img.src = imageUrl;
+            
+            // Add error handling for images
+            img.onerror = function() {
+                this.src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
+            };
+            
+            petCard.innerHTML = `
+                <div class="pet-info">
+                    <h3>${pet.name}</h3>
+                    <p><strong>Type:</strong> ${pet.type}</p>
+                    <p><strong>Breed:</strong> ${pet.breed}</p>
+                    <p><strong>Age:</strong> ${pet.age} years</p>
+                    <p><strong>Size:</strong> ${pet.size}</p>
+                </div>
+            `;
+            
+            petCard.insertBefore(img, petCard.firstChild);
+            return petCard;
         }
 
-        // Apply for adoption
-        async function applyForAdoption(petId) {
+        // Function to retry loading
+        function retryLoading() {
+            cachedPets = null;
+            lastFetchTime = 0;
+            getPetsData().then(displayPets);
+        }
+
+        // Function to view pet details
+        function viewPetDetails(petId) {
+            window.location.href = `pet-details.html?id=${petId}`;
+        }
+
+        // Check if user is logged in and initialize
+        window.addEventListener('DOMContentLoaded', async () => {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
             try {
-                const response = await fetch(`${API_BASE_URL}/applications/`, {
+                const pets = await getPetsData();
+                await displayPets(pets);
+            } catch (error) {
+                console.error('Error initializing page:', error);
+            }
+        });
+
+        // Optimized logout handler
+        const handleLogout = async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/logout/`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        pet_id: petId,
-                        notes: 'I would love to adopt this pet!'
-                    })
+                    }
                 });
 
-                if (!response.ok) throw new Error('Failed to submit application');
-
-                alert('Application submitted successfully!');
-                document.getElementById('petModal').style.display = 'none';
+                if (response.ok) {
+                    cachedPets = null;
+                    lastFetchTime = 0;
+                    localStorage.removeItem('user');
+                    window.location.href = 'login.html';
+                }
             } catch (error) {
-                console.error('Error submitting application:', error);
-                alert('Failed to submit application. Please try again later.');
+                console.error('Logout error:', error);
             }
-        }
+        };
 
-        // Filter pets
-        function filterPets() {
-            const type = document.getElementById('type').value;
-            const size = document.getElementById('size').value;
-            const gender = document.getElementById('gender').value;
-            const age = document.getElementById('age').value;
-            const neutered = document.getElementById('neutered').value;
-            const search = document.getElementById('search').value.toLowerCase();
-
-            let filteredPets = [...currentPets]; // Create a copy of current pets
-
-            if (type) filteredPets = filteredPets.filter(pet => pet.type === type);
-            if (size) filteredPets = filteredPets.filter(pet => pet.size === size);
-            if (gender) filteredPets = filteredPets.filter(pet => pet.gender === gender);
-            if (neutered) filteredPets = filteredPets.filter(pet => pet.neutered === (neutered === 'true'));
-            if (search) {
-                filteredPets = filteredPets.filter(pet => 
-                    pet.name.toLowerCase().includes(search) || 
-                    pet.breed.toLowerCase().includes(search)
-                );
-            }
-            if (age) {
-                const [min, max] = age.split('-').map(Number);
-                filteredPets = filteredPets.filter(pet => {
-                    if (max) return pet.age >= min && pet.age <= max;
-                    return pet.age >= min;
-                });
-            }
-
-            displayPets(filteredPets);
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', async () => {
-            const isAuthenticated = await checkAuth();
-            if (isAuthenticated) {
-                await fetchPets();
-            }
-
-            const filterInputs = ['type', 'size', 'gender', 'age', 'neutered', 'search'];
-            filterInputs.forEach(inputId => {
-                const element = document.getElementById(inputId);
-                if (element) {
-                    element.addEventListener('change', filterPets);
-                }
-            });
-
-            document.querySelector('.close').addEventListener('click', () => {
-                document.getElementById('petModal').style.display = 'none';
-            });
-
-            window.addEventListener('click', (event) => {
-                const modal = document.getElementById('petModal');
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-
-            document.getElementById('logout').addEventListener('click', (e) => {
-                e.preventDefault();
-                // Revoke all object URLs to prevent memory leaks
-                imageCache.forEach(url => URL.revokeObjectURL(url));
-                imageCache.clear();
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'login.html';
-            });
-        });
+        // Add event listener for logout
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
     </script>
 </body>
 </html>

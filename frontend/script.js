@@ -32,7 +32,7 @@ const API_BASE_URL = 'http://localhost:8000/api';
         // Handle login form submission
 loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const username = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             
     try {
@@ -41,19 +41,29 @@ loginForm.addEventListener('submit', async function(e) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include',
             body: JSON.stringify({
-                username: email,
+                username: username,
                 password: password
             })
         });
 
+        let data;
+        try {
+            data = await response.json();
+        } catch (err) {
+            alert('Server error: Invalid response.');
+            return;
+        }
+
         if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('user', JSON.stringify({
+                _id: data.user_id,
+                username: data.username,
+                user_type: data.user_type || 'adopter'
+            }));
             window.location.href = 'index.html';
         } else {
-            alert('Invalid credentials. Please try again.');
+            alert(data.error || 'Invalid credentials. Please try again.');
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -70,8 +80,15 @@ registerForm.addEventListener('submit', async function(e) {
             const confirmPassword = document.getElementById('register-confirm').value;
             const accountType = document.getElementById('account-type').value;
             
+            // Validate password match
             if (password !== confirmPassword) {
                 alert("Passwords don't match!");
+                return;
+            }
+
+            // Validate password length
+            if (password.length < 6) {
+                alert("Password must be at least 6 characters long!");
                 return;
             }
             
@@ -91,12 +108,15 @@ registerForm.addEventListener('submit', async function(e) {
             })
         });
 
+        const data = await response.json();
+
         if (response.ok) {
             alert('Registration successful! Please login.');
             // Switch to login tab
             document.querySelector('[data-tab="login"]').click();
+            // Clear registration form
+            registerForm.reset();
         } else {
-            const data = await response.json();
             alert(data.error || 'Registration failed. Please try again.');
         }
     } catch (error) {
@@ -248,53 +268,39 @@ async function filterPets() {
     }
         }
         
-        function displayPets(pets) {
-            // Clear existing cards
-            petCardsContainer.innerHTML = '';
-            
-            if (pets.length === 0) {
-                petCardsContainer.innerHTML = '<p style="text-align: center; grid-column: 1 / -1; font-size: 18px; margin: 30px 0;">No pets match your search criteria. Please try different filters.</p>';
-                return;
-            }
-            
-            // Create pet cards
-            pets.forEach(pet => {
+        // Function to display pets
+        async function displayPets(pets) {
+            const petsContainer = document.getElementById('pets-container');
+            petsContainer.innerHTML = '';
+
+            for (const pet of pets) {
                 const petCard = document.createElement('div');
                 petCard.className = 'pet-card';
                 
-                const neuteredText = pet.neutered ? 'Neutered' : 'Not neutered';
-        const imageUrl = pet.image ? `http://localhost:8000${pet.image}` : 'https://via.placeholder.com/300x200?text=No+Image';
+                // Create image element
+                const img = document.createElement('img');
+                img.alt = pet.name;
+                img.className = 'pet-image';
+                
+                // Construct proper image URL
+                const imageUrl = pet.image ? `${API_BASE_URL}${pet.image}` : 'images/default-pet.jpg';
+                
+                // Load cached image
+                await loadCachedImage(img, imageUrl);
                 
                 petCard.innerHTML = `
-                    <div class="pet-img">
-                <img src="${imageUrl}" alt="${pet.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                    </div>
                     <div class="pet-info">
-                        <h3 class="pet-name">${pet.name}</h3>
-                        <div class="pet-details">
-                            <p>${pet.breed} • ${pet.age} ${pet.age === 1 ? 'year' : 'years'} old</p>
-                            <p>${pet.gender} • ${neuteredText}</p>
-                    <p>${pet.shelter_name} • ${pet.shelter_location || 'Location not specified'}</p>
-                        </div>
-                        <div class="pet-tags">
-                            ${pet.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                <a href="#" class="btn pet-details-btn" data-id="${pet._id}" style="margin-top: 15px;">Learn More</a>
+                        <h3>${pet.name}</h3>
+                        <p>${pet.breed}</p>
+                        <p>Age: ${pet.age}</p>
+                        <button onclick="viewPetDetails('${pet._id}')" class="view-button">View Details</button>
                     </div>
                 `;
                 
-                petCardsContainer.appendChild(petCard);
-            });
-            
-            // Add event listeners to "Learn More" buttons
-            document.querySelectorAll('.pet-details-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const petId = this.getAttribute('data-id');
-            // Handle pet details view
-            console.log(`View details for pet ${petId}`);
-                });
-            });
+                // Insert image at the beginning
+                petCard.insertBefore(img, petCard.firstChild);
+                petsContainer.appendChild(petCard);
+            }
         }
         
 // Initialize pet filtering
@@ -375,68 +381,27 @@ async function updatePet(petId, petData) {
     }
 }
 
-// Function to display pets
-function displayPets(pets) {
-    const petsContainer = document.getElementById('pets-container');
-    petsContainer.innerHTML = '';
-
-    pets.forEach(pet => {
-        const imageUrl = pet.image ? `${API_BASE_URL}${pet.image}` : 'https://via.placeholder.com/300x200?text=No+Image';
-        const shelterLocation = pet.shelter_location || 'Location not specified';
-        
-        const petCard = document.createElement('div');
-        petCard.className = 'pet-card';
-        petCard.innerHTML = `
-            <img src="${imageUrl}" alt="${pet.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-            <div class="pet-info">
-                <h3>${pet.name}</h3>
-                <p><strong>Type:</strong> ${pet.type}</p>
-                <p><strong>Breed:</strong> ${pet.breed}</p>
-                <p><strong>Age:</strong> ${pet.age} years</p>
-                <p><strong>Gender:</strong> ${pet.gender}</p>
-                <p><strong>Size:</strong> ${pet.size}</p>
-                <p><strong>Shelter:</strong> ${pet.shelter_name || 'Unknown'}</p>
-                <p><strong>Location:</strong> ${shelterLocation}</p>
-                <button class="learn-more" data-id="${pet._id}">Learn More</button>
-            </div>
-        `;
-        petsContainer.appendChild(petCard);
-    });
-
-    // Add event listeners to "Learn More" buttons
-    document.querySelectorAll('.learn-more').forEach(button => {
-        button.addEventListener('click', () => {
-            const petId = button.getAttribute('data-id');
-            showPetDetails(petId);
-        });
-    });
-}
-
 // Function to show pet details
 async function showPetDetails(petId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/pets/${petId}/`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch pet details');
-        }
-
+        const response = await fetch(`${API_BASE_URL}/pets/${petId}/`);
         const pet = await response.json();
-        const imageUrl = pet.image ? `${API_BASE_URL}${pet.image}` : 'https://via.placeholder.com/300x200?text=No+Image';
-        const shelterLocation = pet.shelter_location || 'Location not specified';
 
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <img src="${imageUrl}" alt="${pet.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <div class="pet-details">
-                    <h2>${pet.name}</h2>
+        const detailsContainer = document.getElementById('pet-details');
+        const img = document.createElement('img');
+        img.alt = pet.name;
+        img.className = 'pet-detail-image';
+        
+        // Construct proper image URL
+        const imageUrl = pet.image ? `${API_BASE_URL}${pet.image}` : 'images/default-pet.jpg';
+        
+        // Load cached image
+        await loadCachedImage(img, imageUrl);
+
+        detailsContainer.innerHTML = `
+            <div class="pet-detail-content">
+                <h2>${pet.name}</h2>
+                <div class="pet-detail-info">
                     <p><strong>Type:</strong> ${pet.type}</p>
                     <p><strong>Breed:</strong> ${pet.breed}</p>
                     <p><strong>Age:</strong> ${pet.age} years</p>
@@ -445,42 +410,173 @@ async function showPetDetails(petId) {
                     <p><strong>Neutered:</strong> ${pet.neutered ? 'Yes' : 'No'}</p>
                     <p><strong>Description:</strong> ${pet.description}</p>
                     <p><strong>Shelter:</strong> ${pet.shelter_name || 'Unknown'}</p>
-                    <p><strong>Location:</strong> ${shelterLocation}</p>
-                    <p><strong>Tags:</strong> ${pet.tags.join(', ')}</p>
-                    <button class="apply-button" data-id="${pet._id}">Apply for Adoption</button>
+                    <p><strong>Location:</strong> ${pet.shelter_location || 'Location not specified'}</p>
                 </div>
+                <button onclick="applyForPet('${pet._id}')" class="apply-button">Apply for Adoption</button>
             </div>
         `;
-
-        document.body.appendChild(modal);
-
-        // Close modal when clicking the X
-        modal.querySelector('.close').addEventListener('click', () => {
-            modal.remove();
-        });
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-
-        // Handle adoption application
-        modal.querySelector('.apply-button').addEventListener('click', () => {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
-                alert('Please log in to apply for adoption');
-                return;
-            }
-            if (user.user_type !== 'adopter') {
-                alert('Only adopters can apply for adoption');
-                return;
-            }
-            showApplicationForm(pet);
-        });
+        
+        // Insert image at the beginning
+        detailsContainer.insertBefore(img, detailsContainer.firstChild);
+        detailsContainer.style.display = 'block';
     } catch (error) {
-        console.error('Error showing pet details:', error);
-        alert('Failed to load pet details');
+        console.error('Error loading pet details:', error);
+        alert('Error loading pet details. Please try again.');
+    }
+}
+
+// Function to convert image to base64
+function convertToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+    });
+}
+
+// Function to optimize image size
+async function optimizeImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        };
+    });
+}
+
+// Add image preview functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const petImageInput = document.getElementById('petImage');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (petImageInput && imagePreview) {
+        petImageInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const optimizedBase64 = await optimizeImage(file);
+                    imagePreview.innerHTML = `<img src="${optimizedBase64}" alt="Preview" style="max-width: 200px; margin-top: 10px;">`;
+                } catch (error) {
+                    console.error('Error processing image:', error);
+                }
+            }
+        });
+    }
+});
+
+// Update the add pet form submission
+async function handleAddPetSubmit(event) {
+    event.preventDefault();
+    
+    try {
+        const formData = {
+            name: document.getElementById('name').value,
+            type: document.getElementById('type').value,
+            breed: document.getElementById('breed').value,
+            age: document.getElementById('age').value,
+            gender: document.getElementById('gender').value,
+            size: document.getElementById('size').value,
+            neutered: document.getElementById('neutered').value,
+            description: document.getElementById('description').value,
+            shelter_id: document.getElementById('shelter_id').value
+        };
+
+        // Handle image
+        const imageFile = document.getElementById('petImage').files[0];
+        if (imageFile) {
+            formData.image = await optimizeImage(imageFile);
+        }
+
+        const response = await fetch('/api/pets/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            alert('Pet added successfully!');
+            window.location.href = '/pets.html';
+        } else {
+            const error = await response.json();
+            alert('Error adding pet: ' + (error.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding pet. Please try again.');
+    }
+}
+
+// Image caching utility
+async function getCachedImage(url) {
+    try {
+        // Check if image is in cache
+        const cachedImage = localStorage.getItem(`img_${url}`);
+        if (cachedImage) {
+            return cachedImage;
+        }
+
+        // If not in cache, fetch and store
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch image');
+        }
+        const blob = await response.blob();
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+
+        // Store in cache
+        localStorage.setItem(`img_${url}`, base64);
+        return base64;
+    } catch (error) {
+        console.error('Error caching image:', error);
+        return 'images/default-pet.jpg'; // Return default image if caching fails
+    }
+}
+
+// Function to load and display cached images
+async function loadCachedImage(imgElement, imageUrl) {
+    try {
+        const cachedImage = await getCachedImage(imageUrl);
+        imgElement.src = cachedImage;
+        imgElement.onerror = () => {
+            imgElement.src = 'images/default-pet.jpg';
+        };
+    } catch (error) {
+        console.error('Error loading cached image:', error);
+        imgElement.src = 'images/default-pet.jpg';
     }
 }

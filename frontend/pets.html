@@ -102,8 +102,11 @@
         <p>&copy; 2024 PawsFind. All rights reserved.</p>
     </footer>
 
-    <script src="script.js"></script>
+    <!-- <script src="script.js"></script> -->
     <script>
+        // Make sure API_BASE_URL is defined at the very top
+        const API_BASE_URL = 'http://localhost:8000/api';
+
         // Check if user is logged in
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) {
@@ -113,21 +116,17 @@
         // Load pets
         async function loadPets() {
             try {
-                console.log('Fetching pets from:', `${API_BASE_URL}/pets/`);
                 const response = await fetch(`${API_BASE_URL}/pets/`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to load pets');
+                    throw new Error('Failed to load pets');
                 }
 
                 const pets = await response.json();
-                console.log('Received pets:', pets);
                 displayPets(pets);
             } catch (error) {
                 console.error('Error loading pets:', error);
@@ -152,28 +151,64 @@
             }
 
             pets.forEach(pet => {
-                const petCard = document.createElement('div');
-                petCard.className = 'pet-card';
-                petCard.innerHTML = `
-                    <img src="${pet.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${pet.name}">
-                    <div class="pet-info">
-                        <h3>${pet.name}</h3>
-                        <p><strong>Type:</strong> ${pet.type}</p>
-                        <p><strong>Breed:</strong> ${pet.breed}</p>
-                        <p><strong>Age:</strong> ${pet.age} years</p>
-                        <p><strong>Size:</strong> ${pet.size}</p>
-                        <button class="learn-more" onclick="showPetDetails('${pet._id}')">Learn More</button>
-                    </div>
-                `;
+                const petCard = createPetCard(pet);
                 petsGrid.appendChild(petCard);
             });
+        }
+
+        function createPetCard(pet) {
+            const petCard = document.createElement('div');
+            petCard.className = 'pet-card';
+            
+            const img = document.createElement('img');
+            img.alt = pet.name;
+            img.className = 'pet-image';
+            
+            // Handle different types of image data
+            let imageUrl;
+            if (pet.image) {
+                if (pet.image.startsWith('data:image')) {
+                    // If it's already a base64 string
+                    imageUrl = pet.image;
+                } else if (pet.image.startsWith('/')) {
+                    // If it's a relative path from the API
+                    imageUrl = `${API_BASE_URL}${pet.image}`;
+                } else {
+                    // If it's a full URL
+                    imageUrl = pet.image;
+                }
+            } else {
+                // Default image if no image is provided
+                imageUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
+            }
+            
+            img.src = imageUrl;
+            
+            // Add error handling for images
+            img.onerror = function() {
+                this.src = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
+            };
+            
+            petCard.innerHTML = `
+                <div class="pet-info">
+                    <h3>${pet.name}</h3>
+                    <p><strong>Type:</strong> ${pet.type}</p>
+                    <p><strong>Breed:</strong> ${pet.breed}</p>
+                    <p><strong>Age:</strong> ${pet.age} years</p>
+                    <p><strong>Size:</strong> ${pet.size}</p>
+                    <button onclick="showPetDetails('${pet._id}')" class="view-button">Learn More</button>
+                </div>
+            `;
+            
+            petCard.insertBefore(img, petCard.firstChild);
+            return petCard;
         }
 
         // Show pet details
         async function showPetDetails(petId) {
             try {
                 console.log('Fetching pet details for:', petId);
-                const response = await fetch(`${API_BASE_URL}/pets/${petId}/`, {
+                const response = await fetch(`${API_BASE_URL}/pets/${petId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json'
@@ -190,9 +225,21 @@
                 const modal = document.getElementById('pet-modal');
                 const details = document.getElementById('pet-details');
 
+                // Handle image URL
+                let imageUrl = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&auto=format&fit=crop&q=60';
+                if (pet.image) {
+                    if (pet.image.startsWith('data:image')) {
+                        imageUrl = pet.image;
+                    } else if (pet.image.startsWith('/')) {
+                        imageUrl = `${API_BASE_URL}${pet.image}`;
+                    } else {
+                        imageUrl = pet.image;
+                    }
+                }
+
                 details.innerHTML = `
                     <div class="pet-details">
-                        <img src="${pet.image || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${pet.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;">
+                        <img src="${imageUrl}" alt="${pet.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;">
                         <h2>${pet.name}</h2>
                         <p><strong>Type:</strong> ${pet.type}</p>
                         <p><strong>Breed:</strong> ${pet.breed}</p>

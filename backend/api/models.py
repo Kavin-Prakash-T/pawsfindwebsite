@@ -130,6 +130,8 @@ class Application:
         return applications_collection.delete_one({'_id': ObjectId(application_id)})
 
 class User:
+    collection = users_collection
+
     def __init__(self, username, email, password):
         self.username = username
         self.email = email
@@ -137,23 +139,42 @@ class User:
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
 
-    @staticmethod
-    def create(user_data):
-        user = User(**user_data)
-        result = users_collection.insert_one(user.__dict__)
-        return str(result.inserted_id)
+    @classmethod
+    def get_by_email(cls, email):
+        return cls.collection.find_one({'email': email})
+
+    @classmethod
+    def check_password(cls, input_password, stored_password):
+        # For now, simple direct comparison
+        # In production, you should use proper password hashing
+        return input_password == stored_password
+
+    @classmethod
+    def create(cls, data):
+        user_data = {
+            'username': data['username'],
+            'email': data['email'],
+            'password': data['password'],  # In production, hash this password
+            'user_type': data.get('user_type', 'adopter'),
+            'first_name': data.get('first_name', ''),
+            'last_name': data.get('last_name', ''),
+            'created_at': datetime.utcnow()
+        }
+        result = cls.collection.insert_one(user_data)
+        return result.inserted_id
 
     @staticmethod
     def get_by_id(user_id):
         return users_collection.find_one({'_id': ObjectId(user_id)})
 
     @staticmethod
-    def get_by_username(username):
-        return users_collection.find_one({'username': username})
-
-    @staticmethod
-    def authenticate(username, password):
-        user = User.get_by_username(username)
-        if user and check_password(password, user['password']):
-            return user
+    def authenticate(email, password):
+        user = User.get_by_email(email)
+        if user and User.check_password(password, user['password']):
+            return {
+                '_id': user['_id'],
+                'username': user['username'],
+                'email': user['email'],
+                'user_type': user.get('user_type', 'adopter')
+            }
         return None

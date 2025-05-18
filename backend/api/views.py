@@ -41,30 +41,57 @@ class UserViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'])
     def register(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            user_id = User.create(serializer.validated_data)
-            return Response({
-                'message': 'User registered successfully',
-                'user_id': user_id,
-                'username': serializer.validated_data['username']
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                user_id = User.create(serializer.validated_data)
+                return Response({
+                    'message': 'User registered successfully',
+                    'user_id': user_id,
+                    'username': serializer.validated_data['username']
+                }, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def login(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        user = User.authenticate(username, password)
-        if user:
-            login(request, user)
+        try:
+            email = request.data.get('email')
+            password = request.data.get('password')
+            
+            if not email or not password:
+                return Response({
+                    'error': 'Email and password are required'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get user from database
+            user = User.get_by_email(email)
+            
+            if not user:
+                return Response({
+                    'error': 'User not found'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            # Check password
+            if not User.check_password(password, user['password']):
+                return Response({
+                    'error': 'Invalid password'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+            
+            # Login successful
             return Response({
                 'message': 'Login successful',
                 'user_id': str(user['_id']),
-                'username': user['username']
-            })
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+                'username': user['username'],
+                'email': user['email'],
+                'user_type': user.get('user_type', 'adopter')
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):
