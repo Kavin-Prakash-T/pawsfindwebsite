@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications - PawsFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PawsFind</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="add-pet.html">Add Pet</a>
+                <a href="applications.html" class="active">Applications</a>
+                <a href="#" id="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="applications-container">
+                <h1>Adoption Applications</h1>
+                
+                <div class="applications-filters">
+                    <select id="status-filter">
+                        <option value="all">All Applications</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="applications-list" id="applications-list">
+                    <!-- Applications will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in and is a shelter
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.user_type !== 'shelter') {
+            window.location.href = 'index.html';
+        }
+
+        // Load applications
+        async function loadApplications(status = 'all') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/applications/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load applications');
+                }
+
+                const applications = await response.json();
+                const filteredApplications = status === 'all' 
+                    ? applications 
+                    : applications.filter(app => app.status === status);
+
+                displayApplications(filteredApplications);
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                alert('Failed to load applications. Please try again.');
+            }
+        }
+
+        // Display applications
+        function displayApplications(applications) {
+            const applicationsList = document.getElementById('applications-list');
+            applicationsList.innerHTML = '';
+
+            if (applications.length === 0) {
+                applicationsList.innerHTML = '<p class="no-applications">No applications found.</p>';
+                return;
+            }
+
+            applications.forEach(application => {
+                const applicationCard = document.createElement('div');
+                applicationCard.className = 'application-card';
+                applicationCard.innerHTML = `
+                    <div class="application-header">
+                        <h3>${application.pet.name}</h3>
+                        <span class="status ${application.status}">${application.status}</span>
+                    </div>
+                    <div class="application-details">
+                        <p><strong>Applicant:</strong> ${application.applicant.name}</p>
+                        <p><strong>Email:</strong> ${application.applicant.email}</p>
+                        <p><strong>Phone:</strong> ${application.applicant.phone}</p>
+                        <p><strong>Applied on:</strong> ${new Date(application.created_at).toLocaleDateString()}</p>
+                        <p><strong>Message:</strong> ${application.message}</p>
+                    </div>
+                    ${application.status === 'pending' ? `
+                        <div class="application-actions">
+                            <button onclick="updateApplicationStatus('${application._id}', 'approved')" class="approve-button">
+                                Approve
+                            </button>
+                            <button onclick="updateApplicationStatus('${application._id}', 'rejected')" class="reject-button">
+                                Reject
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                applicationsList.appendChild(applicationCard);
+            });
+        }
+
+        // Update application status
+        async function updateApplicationStatus(applicationId, status) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/applications/${applicationId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update application status');
+                }
+
+                // Reload applications
+                const currentStatus = document.getElementById('status-filter').value;
+                loadApplications(currentStatus);
+            } catch (error) {
+                console.error('Error updating application:', error);
+                alert('Failed to update application status. Please try again.');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('status-filter').addEventListener('change', (e) => {
+            loadApplications(e.target.value);
+        });
+
+        // Initial load
+        loadApplications();
+    </script>
+</body>
+</html> 

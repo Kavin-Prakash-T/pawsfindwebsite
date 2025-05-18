@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - PawsFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PawsFind</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="login.html">Login</a>
+                <a href="register.html" class="active">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="auth-container">
+                <h1>Register</h1>
+                <form id="register-form" class="form">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm_password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user-type">I am a:</label>
+                        <select id="user-type" name="user_type" required>
+                            <option value="">Select Type</option>
+                            <option value="adopter">Pet Adopter</option>
+                            <option value="shelter">Shelter</option>
+                        </select>
+                    </div>
+
+                    <!-- Shelter-specific fields -->
+                    <div id="shelter-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="shelter-name">Shelter Name</label>
+                            <input type="text" id="shelter-name" name="shelter_name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shelter-description">Shelter Description</label>
+                            <textarea id="shelter-description" name="shelter_description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shelter-location">Location</label>
+                            <input type="text" id="shelter-location" name="shelter_location">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shelter-phone">Phone Number</label>
+                            <input type="tel" id="shelter-phone" name="shelter_phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="shelter-website">Website (optional)</label>
+                            <input type="url" id="shelter-website" name="shelter_website">
+                        </div>
+                    </div>
+
+                    <!-- Adopter-specific fields -->
+                    <div id="adopter-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="adopter-phone">Phone Number</label>
+                            <input type="tel" id="adopter-phone" name="adopter_phone">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adopter-address">Address</label>
+                            <textarea id="adopter-address" name="adopter_address" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-button">Register</button>
+
+                    <p class="auth-link">
+                        Already have an account? <a href="login.html">Login here</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Show/hide fields based on user type
+        const userTypeSelect = document.getElementById('user-type');
+        const shelterFields = document.getElementById('shelter-fields');
+        const adopterFields = document.getElementById('adopter-fields');
+
+        userTypeSelect.addEventListener('change', function() {
+            if (this.value === 'shelter') {
+                shelterFields.style.display = 'block';
+                adopterFields.style.display = 'none';
+                // Make shelter fields required
+                shelterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = true;
+                });
+                adopterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = false;
+                });
+            } else if (this.value === 'adopter') {
+                shelterFields.style.display = 'none';
+                adopterFields.style.display = 'block';
+                // Make adopter fields required
+                shelterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = false;
+                });
+                adopterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = true;
+                });
+            } else {
+                shelterFields.style.display = 'none';
+                adopterFields.style.display = 'none';
+                // Make all fields not required
+                shelterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = false;
+                });
+                adopterFields.querySelectorAll('input, textarea').forEach(field => {
+                    field.required = false;
+                });
+            }
+        });
+
+        // Form submission
+        const form = document.getElementById('register-form');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            const userType = document.getElementById('user-type').value;
+            const formData = {
+                username: document.getElementById('email').value,
+                email: document.getElementById('email').value,
+                password: password,
+                user_type: userType,
+                first_name: document.getElementById('name').value.split(' ')[0],
+                last_name: document.getElementById('name').value.split(' ').slice(1).join(' ')
+            };
+
+            // Add type-specific fields
+            if (userType === 'shelter') {
+                formData.shelter = {
+                    name: document.getElementById('shelter-name').value,
+                    description: document.getElementById('shelter-description').value,
+                    location: document.getElementById('shelter-location').value,
+                    phone: document.getElementById('shelter-phone').value,
+                    website: document.getElementById('shelter-website').value || '',
+                    email: document.getElementById('email').value
+                };
+            } else if (userType === 'adopter') {
+                formData.phone = document.getElementById('adopter-phone').value;
+                formData.address = document.getElementById('adopter-address').value;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/register/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Registration failed');
+                }
+
+                alert('Registration successful! Please login.');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert(error.message || 'Registration failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html> 

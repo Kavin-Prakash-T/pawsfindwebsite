@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Pets - PawsFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PawsFind</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="pets.html" class="active">Available Pets</a>
+                <a href="my-applications.html">My Applications</a>
+                <a href="#" id="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="pets-container">
+                <h1>Available Pets</h1>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="type-filter">Pet Type</label>
+                        <select id="type-filter">
+                            <option value="">All Types</option>
+                            <option value="dog">Dog</option>
+                            <option value="cat">Cat</option>
+                            <option value="bird">Bird</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="size-filter">Size</label>
+                        <select id="size-filter">
+                            <option value="">All Sizes</option>
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="age-filter">Age</label>
+                        <select id="age-filter">
+                            <option value="">All Ages</option>
+                            <option value="0-1">Under 1 year</option>
+                            <option value="1-3">1-3 years</option>
+                            <option value="3-5">3-5 years</option>
+                            <option value="5+">5+ years</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="gender-filter">Gender</label>
+                        <select id="gender-filter">
+                            <option value="">All Genders</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="neutered-filter">Neutered/Spayed</label>
+                        <select id="neutered-filter">
+                            <option value="">All</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="search-input">Search</label>
+                        <input type="text" id="search-input" placeholder="Search by name or breed">
+                    </div>
+                </div>
+
+                <div class="pets-grid" id="pets-grid">
+                    <!-- Pets will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pet Details Modal -->
+    <div id="pet-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="pet-details">
+                <!-- Pet details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            window.location.href = 'index.html';
+        }
+
+        // Load pets
+        async function loadPets() {
+            try {
+                console.log('Fetching pets from:', `${API_BASE_URL}/pets/`);
+                const response = await fetch(`${API_BASE_URL}/pets/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load pets');
+                }
+
+                const pets = await response.json();
+                console.log('Received pets:', pets);
+                displayPets(pets);
+            } catch (error) {
+                console.error('Error loading pets:', error);
+                const petsGrid = document.getElementById('pets-grid');
+                petsGrid.innerHTML = `
+                    <div class="error-message">
+                        <p>Failed to load pets. Please try again later.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Display pets
+        function displayPets(pets) {
+            const petsGrid = document.getElementById('pets-grid');
+            petsGrid.innerHTML = '';
+
+            if (!pets || pets.length === 0) {
+                petsGrid.innerHTML = '<p class="no-pets">No pets found.</p>';
+                return;
+            }
+
+            pets.forEach(pet => {
+                const petCard = document.createElement('div');
+                petCard.className = 'pet-card';
+                petCard.innerHTML = `
+                    <img src="${pet.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${pet.name}">
+                    <div class="pet-info">
+                        <h3>${pet.name}</h3>
+                        <p><strong>Type:</strong> ${pet.type}</p>
+                        <p><strong>Breed:</strong> ${pet.breed}</p>
+                        <p><strong>Age:</strong> ${pet.age} years</p>
+                        <p><strong>Size:</strong> ${pet.size}</p>
+                        <button class="learn-more" onclick="showPetDetails('${pet._id}')">Learn More</button>
+                    </div>
+                `;
+                petsGrid.appendChild(petCard);
+            });
+        }
+
+        // Show pet details
+        async function showPetDetails(petId) {
+            try {
+                console.log('Fetching pet details for:', petId);
+                const response = await fetch(`${API_BASE_URL}/pets/${petId}/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load pet details');
+                }
+
+                const pet = await response.json();
+                console.log('Received pet details:', pet);
+                const modal = document.getElementById('pet-modal');
+                const details = document.getElementById('pet-details');
+
+                details.innerHTML = `
+                    <div class="pet-details">
+                        <img src="${pet.image || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${pet.name}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 8px;">
+                        <h2>${pet.name}</h2>
+                        <p><strong>Type:</strong> ${pet.type}</p>
+                        <p><strong>Breed:</strong> ${pet.breed}</p>
+                        <p><strong>Age:</strong> ${pet.age} years</p>
+                        <p><strong>Gender:</strong> ${pet.gender}</p>
+                        <p><strong>Size:</strong> ${pet.size}</p>
+                        <p><strong>Neutered/Spayed:</strong> ${pet.neutered ? 'Yes' : 'No'}</p>
+                        <p><strong>Description:</strong> ${pet.description}</p>
+                        ${pet.tags && pet.tags.length > 0 ? `
+                            <p><strong>Tags:</strong> ${pet.tags.join(', ')}</p>
+                        ` : ''}
+                        <button class="apply-button" onclick="applyForAdoption('${pet._id}')">Apply for Adoption</button>
+                    </div>
+                `;
+
+                modal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading pet details:', error);
+                alert('Failed to load pet details. Please try again.');
+            }
+        }
+
+        // Apply for adoption
+        async function applyForAdoption(petId) {
+            const message = prompt('Please enter a message explaining why you would like to adopt this pet:');
+            if (!message) return;
+
+            try {
+                console.log('Submitting application for pet:', petId);
+                const response = await fetch(`${API_BASE_URL}/applications/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pet_id: petId,
+                        message: message
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to submit application');
+                }
+
+                alert('Application submitted successfully!');
+                document.getElementById('pet-modal').style.display = 'none';
+            } catch (error) {
+                console.error('Error submitting application:', error);
+                alert(error.message || 'Failed to submit application. Please try again.');
+            }
+        }
+
+        // Filter pets
+        function filterPets() {
+            const type = document.getElementById('type-filter').value;
+            const size = document.getElementById('size-filter').value;
+            const age = document.getElementById('age-filter').value;
+            const gender = document.getElementById('gender-filter').value;
+            const neutered = document.getElementById('neutered-filter').value;
+            const search = document.getElementById('search-input').value.toLowerCase();
+
+            const pets = document.querySelectorAll('.pet-card');
+            pets.forEach(pet => {
+                const petInfo = pet.querySelector('.pet-info');
+                const petType = petInfo.querySelector('p:nth-child(2)').textContent.toLowerCase();
+                const petSize = petInfo.querySelector('p:nth-child(5)').textContent.toLowerCase();
+                const petName = petInfo.querySelector('h3').textContent.toLowerCase();
+                const petBreed = petInfo.querySelector('p:nth-child(3)').textContent.toLowerCase();
+
+                const typeMatch = !type || petType.includes(type);
+                const sizeMatch = !size || petSize.includes(size);
+                const searchMatch = !search || petName.includes(search) || petBreed.includes(search);
+
+                pet.style.display = typeMatch && sizeMatch && searchMatch ? 'block' : 'none';
+            });
+        }
+
+        // Event listeners
+        document.querySelectorAll('.filter-group select, .filter-group input').forEach(element => {
+            element.addEventListener('change', filterPets);
+        });
+
+        document.getElementById('search-input').addEventListener('input', filterPets);
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('pet-modal').style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('pet-modal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Initial load
+        loadPets();
+    </script>
+</body>
+</html> 

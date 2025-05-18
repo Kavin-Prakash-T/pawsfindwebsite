@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Applications - PawsFind</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">PawsFind</div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="my-applications.html" class="active">My Applications</a>
+                <a href="#" id="logout">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="applications-container">
+                <h1>My Applications</h1>
+                
+                <div class="applications-filters">
+                    <select id="status-filter">
+                        <option value="all">All Applications</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="applications-list" id="applications-list">
+                    <!-- Applications will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 PawsFind. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in and is an adopter
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || user.user_type !== 'adopter') {
+            window.location.href = 'index.html';
+        }
+
+        // Load applications
+        async function loadApplications(status = 'all') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/applications/my/`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load applications');
+                }
+
+                const applications = await response.json();
+                const filteredApplications = status === 'all' 
+                    ? applications 
+                    : applications.filter(app => app.status === status);
+
+                displayApplications(filteredApplications);
+            } catch (error) {
+                console.error('Error loading applications:', error);
+                alert('Failed to load applications. Please try again.');
+            }
+        }
+
+        // Display applications
+        function displayApplications(applications) {
+            const applicationsList = document.getElementById('applications-list');
+            applicationsList.innerHTML = '';
+
+            if (applications.length === 0) {
+                applicationsList.innerHTML = '<p class="no-applications">No applications found.</p>';
+                return;
+            }
+
+            applications.forEach(application => {
+                const applicationCard = document.createElement('div');
+                applicationCard.className = 'application-card';
+                applicationCard.innerHTML = `
+                    <div class="application-header">
+                        <h3>${application.pet.name}</h3>
+                        <span class="status ${application.status}">${application.status}</span>
+                    </div>
+                    <div class="application-details">
+                        <p><strong>Shelter:</strong> ${application.shelter.name}</p>
+                        <p><strong>Pet Type:</strong> ${application.pet.type}</p>
+                        <p><strong>Breed:</strong> ${application.pet.breed}</p>
+                        <p><strong>Applied on:</strong> ${new Date(application.created_at).toLocaleDateString()}</p>
+                        <p><strong>Message:</strong> ${application.message}</p>
+                        ${application.status === 'rejected' ? `
+                            <p class="rejection-reason"><strong>Reason:</strong> ${application.rejection_reason || 'No reason provided'}</p>
+                        ` : ''}
+                    </div>
+                    ${application.status === 'pending' ? `
+                        <div class="application-actions">
+                            <button onclick="cancelApplication('${application._id}')" class="cancel-button">
+                                Cancel Application
+                            </button>
+                        </div>
+                    ` : ''}
+                `;
+                applicationsList.appendChild(applicationCard);
+            });
+        }
+
+        // Cancel application
+        async function cancelApplication(applicationId) {
+            if (!confirm('Are you sure you want to cancel this application?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/applications/${applicationId}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to cancel application');
+                }
+
+                // Reload applications
+                const currentStatus = document.getElementById('status-filter').value;
+                loadApplications(currentStatus);
+            } catch (error) {
+                console.error('Error canceling application:', error);
+                alert('Failed to cancel application. Please try again.');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('status-filter').addEventListener('change', (e) => {
+            loadApplications(e.target.value);
+        });
+
+        // Initial load
+        loadApplications();
+    </script>
+</body>
+</html> 
